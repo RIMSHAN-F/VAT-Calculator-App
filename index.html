@@ -573,7 +573,6 @@
             <th class="num">Excl. VAT</th>
             <th class="num">VAT Amount</th>
             <th class="num">Incl. VAT</th>
-            <th>Amount in Words</th>
             <th></th>
           </tr>
         </thead>
@@ -585,6 +584,10 @@
             <td class="total-val" id="tot-vat">0.00</td>
             <td class="grand-total" id="tot-incl">0.00</td>
             <td colspan="2"></td>
+          </tr>
+          <tr id="words-row">
+            <td colspan="7" style="padding:10px 14px 14px; border:none;"></td>
+            <td colspan="2" style="padding:10px 14px 14px; border:none; font-size:0.75rem; color:var(--text-muted); font-style:italic; text-align:right;" id="tot-words"></td>
           </tr>
         </tfoot>
       </table>
@@ -613,6 +616,7 @@
       <span class="mt-lbl" style="font-weight:600;color:var(--text)">Total Incl. VAT</span>
       <span class="mt-val gold" id="mt-incl">SAR 0.00</span>
     </div>
+    <div style="padding:8px 0 2px; font-size:0.72rem; color:var(--text-muted); font-style:italic;" id="mt-words"></div>
   </div>
 
   <!-- Summary Cards -->
@@ -631,6 +635,7 @@
       <div class="sum-label">Total Incl. VAT</div>
       <div class="sum-value" id="s-incl">SAR 0.00</div>
       <div class="sum-sub">Final amount due</div>
+      <div style="font-size:0.7rem; color:var(--text-muted); font-style:italic; margin-top:8px; line-height:1.5;" id="s-words"></div>
     </div>
   </div>
 
@@ -782,7 +787,6 @@
         <td class="mono">SAR ${fmt(p.exclVat)}</td>
         <td class="mono">SAR ${fmt(p.vatAmount)}</td>
         <td class="mono" style="color:var(--gold)">SAR ${fmt(p.inclVat)}</td>
-        <td class="words">${numToWords(p.inclVat)}</td>
         <td style="text-align:center">
           <button class="btn-del" onclick="deleteProduct(${p.id})" title="Remove">
             <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -823,7 +827,6 @@
             <span class="m-label">Total Incl. VAT</span>
             <span class="m-value gold" style="font-size:1rem">SAR ${fmt(p.inclVat)}</span>
           </div>
-          <div class="m-words">${numToWords(p.inclVat)}</div>
         </div>
       `;
       mobileCards.appendChild(mc);
@@ -833,16 +836,19 @@
     document.getElementById('tot-excl').textContent = 'SAR ' + fmt(totExcl);
     document.getElementById('tot-vat').textContent  = 'SAR ' + fmt(totVat);
     document.getElementById('tot-incl').textContent = 'SAR ' + fmt(totIncl);
+    document.getElementById('tot-words').textContent = numToWords(totIncl);
 
     // Update mobile totals
     document.getElementById('mt-excl').textContent = 'SAR ' + fmt(totExcl);
     document.getElementById('mt-vat').textContent  = 'SAR ' + fmt(totVat);
     document.getElementById('mt-incl').textContent = 'SAR ' + fmt(totIncl);
+    document.getElementById('mt-words').textContent = numToWords(totIncl);
 
     // Update summary cards
     document.getElementById('s-excl').textContent = 'SAR ' + fmt(totExcl);
     document.getElementById('s-vat').textContent  = 'SAR ' + fmt(totVat);
     document.getElementById('s-incl').textContent = 'SAR ' + fmt(totIncl);
+    document.getElementById('s-words').textContent = numToWords(totIncl);
   }
 
   function escHtml(s) {
@@ -859,14 +865,15 @@
 
   function copyCSV() {
     if (products.length === 0) { showToast('Nothing to copy!'); return; }
-    const header = '#,Product,Unit Price,Qty,VAT %,Excl. VAT,VAT Amount,Incl. VAT,Amount in Words';
+    const header = '#,Product,Unit Price,Qty,VAT %,Excl. VAT,VAT Amount,Incl. VAT';
     const rows = products.map((p, i) =>
-      `${i+1},"${p.product}",${fmt(p.price)},${p.qty},15%,${fmt(p.exclVat)},${fmt(p.vatAmount)},${fmt(p.inclVat)},"${numToWords(p.inclVat)}"`
+      `${i+1},"${p.product}",${fmt(p.price)},${p.qty},15%,${fmt(p.exclVat)},${fmt(p.vatAmount)},${fmt(p.inclVat)}`
     );
     const totExcl = products.reduce((s,p)=>s+p.exclVat,0);
     const totVat  = products.reduce((s,p)=>s+p.vatAmount,0);
     const totIncl = products.reduce((s,p)=>s+p.inclVat,0);
-    rows.push(`,,,,Totals,${fmt(totExcl)},${fmt(totVat)},${fmt(totIncl)},`);
+    rows.push(`,,,,Totals,${fmt(totExcl)},${fmt(totVat)},${fmt(totIncl)}`);
+    rows.push(`,,,,Amount in Words,,,"${numToWords(totIncl)}"`);
     navigator.clipboard.writeText([header,...rows].join('\n'))
       .then(()=>showToast('✓ Copied as CSV!'))
       .catch(()=>showToast('Copy failed — try a different browser'));
@@ -907,8 +914,7 @@
       'VAT %': 15,
       'Amount Excl. VAT (SAR)': parseFloat(p.exclVat.toFixed(2)),
       'VAT Amount (SAR)': parseFloat(p.vatAmount.toFixed(2)),
-      'Amount Incl. VAT (SAR)': parseFloat(p.inclVat.toFixed(2)),
-      'Amount in Words': numToWords(p.inclVat)
+      'Amount Incl. VAT (SAR)': parseFloat(p.inclVat.toFixed(2))
     }));
 
     // Blank separator then totals
@@ -916,15 +922,21 @@
       '#': '', 'Product': 'TOTALS', 'Unit Price (SAR)': '', 'Quantity': '', 'VAT %': '',
       'Amount Excl. VAT (SAR)': parseFloat(totExcl.toFixed(2)),
       'VAT Amount (SAR)': parseFloat(totVat.toFixed(2)),
-      'Amount Incl. VAT (SAR)': parseFloat(totIncl.toFixed(2)),
-      'Amount in Words': ''
+      'Amount Incl. VAT (SAR)': parseFloat(totIncl.toFixed(2))
+    });
+
+    // Amount in words row
+    dataRows.push({
+      '#': '', 'Product': 'Amount in Words', 'Unit Price (SAR)': '', 'Quantity': '', 'VAT %': '',
+      'Amount Excl. VAT (SAR)': '', 'VAT Amount (SAR)': '',
+      'Amount Incl. VAT (SAR)': numToWords(totIncl)
     });
 
     const ws = XLSX.utils.json_to_sheet(dataRows);
 
     ws['!cols'] = [
       { wch: 4 }, { wch: 32 }, { wch: 16 }, { wch: 10 },
-      { wch: 7 }, { wch: 22 }, { wch: 18 }, { wch: 22 }, { wch: 52 }
+      { wch: 7 }, { wch: 22 }, { wch: 18 }, { wch: 22 }
     ];
 
     // Number format for currency & qty columns
