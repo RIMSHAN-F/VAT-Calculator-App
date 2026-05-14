@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VAT Calculator — Invoice Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f3d;
+    --accent: #00d4aa;
+    --accent2: #005c4b;
+    --danger: #ff4d6a;
+    --text: #e8eaf0;
+    --text-muted: #7a8199;
+    --text-dim: #4a5168;
+    --gold: #f5c842;
+    --radius: 12px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(135deg, #0d1a17 0%, #0d0f14 60%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  header span { color: var(--accent); }
+  .header-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Main layout ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 36px 24px 0; }
+
+  /* ── Input card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .input-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr auto;
+    gap: 14px;
+    align-items: end;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field label {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+  .field input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+  }
+  .field input::placeholder { color: var(--text-dim); }
+  .field input.error { border-color: var(--danger); }
+
+  .btn-add {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 22px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .btn-add:hover { background: #00f0c2; transform: translateY(-1px); }
+  .btn-add:active { transform: translateY(0); }
+
+  .err-msg {
+    font-size: 0.72rem;
+    color: var(--danger);
+    margin-top: 10px;
+    min-height: 18px;
+  }
+
+  /* ── Table ── */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+  thead tr {
+    background: var(--surface2);
+    border-bottom: 2px solid var(--accent2);
+  }
+  th {
+    padding: 13px 14px;
+    text-align: left;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  th.num { text-align: right; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+  td {
+    padding: 13px 14px;
+    vertical-align: middle;
+    color: var(--text);
+  }
+  td.mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    text-align: right;
+  }
+  td.num-idx {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    text-align: center;
+    width: 36px;
+  }
+  td.words {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+    max-width: 180px;
+  }
+  td .vat-badge {
+    display: inline-block;
+    background: rgba(0,212,170,0.12);
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+  }
+
+  .btn-del {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    border-radius: 6px;
+    width: 30px; height: 30px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .btn-del:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,77,106,0.07); }
+
+  /* ── Totals footer ── */
+  tfoot tr {
+    background: linear-gradient(90deg, var(--surface2), #1a2228);
+    border-top: 2px solid var(--accent2);
+  }
+  tfoot td {
+    padding: 15px 14px;
+    font-weight: 600;
+  }
+  tfoot td.label {
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  tfoot td.total-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    text-align: right;
+    color: var(--accent);
+  }
+  tfoot td.grand-total {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    text-align: right;
+    color: var(--gold);
+  }
+
+  /* ── Summary cards ── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+  .sum-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .sum-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .sum-card.c1::before { background: var(--text-muted); }
+  .sum-card.c2::before { background: var(--accent); }
+  .sum-card.c3::before { background: var(--gold); }
+
+  .sum-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+  .sum-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
+  .c1 .sum-value { color: var(--text); }
+  .c2 .sum-value { color: var(--accent); }
+  .c3 .sum-value { color: var(--gold); }
+
+  .sum-sub { font-size: 0.72rem; color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 54px 20px;
+    color: var(--text-dim);
+  }
+  .empty-icon { font-size: 2.8rem; margin-bottom: 12px; opacity: 0.5; }
+  .empty-text { font-size: 0.88rem; }
+
+  /* ── Actions ── */
+  .actions { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+  .btn-action {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 7px;
+    transition: all 0.15s;
+  }
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.05); }
+  .btn-action.excel:hover { border-color: #1D6F42; color: #1D6F42; background: rgba(29,111,66,0.07); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    background: var(--surface2);
+    border: 1px solid var(--accent2);
+    color: var(--accent);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 999;
+    pointer-events: none;
+  }
+  #toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ── Print styles ── */
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    header { background: #fff; border-bottom: 2px solid #ccc; padding: 16px 24px; }
+    .card, .summary { display: none; }
+    .actions { display: none; }
+    table { font-size: 11px; }
+    th { background: #f0f0f0 !important; color: #444 !important; }
+    tfoot tr { background: #f9f9f9 !important; }
+    td, th { border: 1px solid #ddd; }
+  }
+
+  @media (max-width: 700px) {
+    header { padding: 20px 18px; }
+    .container { padding: 20px 14px 0; }
+    .input-row { grid-template-columns: 1fr 1fr; }
+    .btn-add { grid-column: 1 / -1; justify-content: center; }
+    .summary { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">🧾</div>
+  <div>
+    <h1>VAT <span>Calculator</span></h1>
+    <div class="header-sub">KSA • 15% VAT • Multi-product invoice tool</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-title">➕ Add Product</div>
+    <div class="input-row">
+      <div class="field">
+        <label>Product / Description</label>
+        <input type="text" id="inp-product" placeholder="e.g. Office Chair" />
+      </div>
+      <div class="field">
+        <label>Unit Price (SAR)</label>
+        <input type="number" id="inp-price" placeholder="0.00" min="0" step="0.01" />
+      </div>
+      <div class="field">
+        <label>Quantity (min 1)</label>
+        <input type="number" id="inp-qty" placeholder="1" min="1" step="1" value="1" />
+      </div>
+      <button class="btn-add" onclick="addProduct()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add
+      </button>
+    </div>
+    <div class="err-msg" id="err-msg"></div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div class="table-wrap">
+      <table id="main-table">
+        <thead>
+          <tr>
+            <th style="text-align:center">#</th>
+            <th>Product</th>
+            <th class="num">Unit Price</th>
+            <th class="num">Qty</th>
+            <th class="num">VAT %</th>
+            <th class="num">Excl. VAT</th>
+            <th class="num">VAT Amount</th>
+            <th class="num">Incl. VAT</th>
+            <th>Amount in Words</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- rows injected here -->
+        </tbody>
+        <tfoot id="table-foot" style="display:none">
+          <tr>
+            <td colspan="5" class="label">Totals</td>
+            <td class="total-val" id="tot-excl">0.00</td>
+            <td class="total-val" id="tot-vat">0.00</td>
+            <td class="grand-total" id="tot-incl">0.00</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📦</div>
+        <div class="empty-text">No products added yet.<br>Fill in the form above to get started.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary" id="summary" style="display:none">
+    <div class="sum-card c1">
+      <div class="sum-label">Amount Excl. VAT</div>
+      <div class="sum-value" id="s-excl">SAR 0.00</div>
+      <div class="sum-sub">Before tax</div>
+    </div>
+    <div class="sum-card c2">
+      <div class="sum-label">VAT Amount (15%)</div>
+      <div class="sum-value" id="s-vat">SAR 0.00</div>
+      <div class="sum-sub">Tax payable</div>
+    </div>
+    <div class="sum-card c3">
+      <div class="sum-label">Total Incl. VAT</div>
+      <div class="sum-value" id="s-incl">SAR 0.00</div>
+      <div class="sum-sub">Final amount due</div>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="actions">
+    <button class="btn-action" onclick="printTable()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print / Save PDF
+    </button>
+    <button class="btn-action" onclick="copyCSV()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Copy as CSV
+    </button>
+    <button class="btn-action excel" onclick="exportExcel()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+      Export to Excel
+    </button>
+    <button class="btn-action danger" onclick="clearAll()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Clear All
+    </button>
+  </div>
+
+</div>
+
+<div id="toast">✓ Copied to clipboard!</div>
+
+<script>
+  // ── State ──
+  let products = [];
+  let nextId = 1;
+
+  // ── Number → Words ──
+  const ones = ['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine',
+                 'Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen',
+                 'Seventeen','Eighteen','Nineteen'];
+  const tens = ['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+
+  function numToWords(n) {
+    n = Math.round(n * 100) / 100;
+    if (n === 0) return 'Zero Riyals';
+    const riyals = Math.floor(n);
+    const halalaRaw = Math.round((n - riyals) * 100);
+    const halala = halalaRaw > 99 ? 99 : halalaRaw;
+    let result = convertInt(riyals);
+    result += riyals === 1 ? ' Riyal' : ' Riyals';
+    if (halala > 0) {
+      result += ' and ' + convertInt(halala) + (halala === 1 ? ' Halala' : ' Halala');
+    }
+    return result;
+  }
+
+  function convertInt(n) {
+    if (n === 0) return '';
+    if (n < 20) return ones[n];
+    if (n < 100) return tens[Math.floor(n/10)] + (n%10 ? ' ' + ones[n%10] : '');
+    if (n < 1000) return ones[Math.floor(n/100)] + ' Hundred' + (n%100 ? ' ' + convertInt(n%100) : '');
+    if (n < 1000000) return convertInt(Math.floor(n/1000)) + ' Thousand' + (n%1000 ? ' ' + convertInt(n%1000) : '');
+    if (n < 1000000000) return convertInt(Math.floor(n/1000000)) + ' Million' + (n%1000000 ? ' ' + convertInt(n%1000000) : '');
+    return convertInt(Math.floor(n/1000000000)) + ' Billion' + (n%1000000000 ? ' ' + convertInt(n%1000000000) : '');
+  }
+
+  function fmt(n) {
+    return n.toLocaleString('en-SA', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // ── Add product ──
+  function addProduct() {
+    const errEl = document.getElementById('err-msg');
+    const product = document.getElementById('inp-product').value.trim();
+    const priceRaw = document.getElementById('inp-price').value;
+    const qtyRaw = document.getElementById('inp-qty').value;
+
+    const price = parseFloat(priceRaw);
+    const qty = parseInt(qtyRaw);
+
+    // Validate
+    let err = '';
+    if (!product) err = 'Please enter a product name.';
+    else if (isNaN(price) || price < 0) err = 'Please enter a valid unit price (≥ 0).';
+    else if (isNaN(qty) || qty < 1) err = 'Quantity must be at least 1.';
+
+    errEl.textContent = err;
+    if (err) return;
+
+    const exclVat = price * qty;
+    const vatAmount = exclVat * 0.15;
+    const inclVat = exclVat + vatAmount;
+
+    products.push({ id: nextId++, product, price, qty, exclVat, vatAmount, inclVat });
+
+    // Reset inputs
+    document.getElementById('inp-product').value = '';
+    document.getElementById('inp-price').value = '';
+    document.getElementById('inp-qty').value = '1';
+
+    render();
+    document.getElementById('inp-product').focus();
+  }
+
+  // ── Delete product ──
+  function deleteProduct(id) {
+    products = products.filter(p => p.id !== id);
+    render();
+  }
+
+  // ── Render ──
+  function render() {
+    const tbody = document.getElementById('table-body');
+    const tfoot = document.getElementById('table-foot');
+    const empty = document.getElementById('empty-state');
+    const summary = document.getElementById('summary');
+
+    tbody.innerHTML = '';
+
+    if (products.length === 0) {
+      empty.style.display = 'block';
+      tfoot.style.display = 'none';
+      summary.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    tfoot.style.display = '';
+    summary.style.display = 'grid';
+
+    let totExcl = 0, totVat = 0, totIncl = 0;
+
+    products.forEach((p, i) => {
+      totExcl += p.exclVat;
+      totVat += p.vatAmount;
+      totIncl += p.inclVat;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="num-idx">${i + 1}</td>
+        <td><strong style="font-weight:500">${escHtml(p.product)}</strong></td>
+        <td class="mono">SAR ${fmt(p.price)}</td>
+        <td class="mono" style="text-align:right">${p.qty}</td>
+        <td style="text-align:center"><span class="vat-badge">15%</span></td>
+        <td class="mono">SAR ${fmt(p.exclVat)}</td>
+        <td class="mono">SAR ${fmt(p.vatAmount)}</td>
+        <td class="mono" style="color:var(--gold)">SAR ${fmt(p.inclVat)}</td>
+        <td class="words">${numToWords(p.inclVat)}</td>
+        <td style="text-align:center">
+          <button class="btn-del" onclick="deleteProduct(${p.id})" title="Remove">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('tot-excl').textContent = 'SAR ' + fmt(totExcl);
+    document.getElementById('tot-vat').textContent  = 'SAR ' + fmt(totVat);
+    document.getElementById('tot-incl').textContent = 'SAR ' + fmt(totIncl);
+
+    document.getElementById('s-excl').textContent = 'SAR ' + fmt(totExcl);
+    document.getElementById('s-vat').textContent  = 'SAR ' + fmt(totVat);
+    document.getElementById('s-incl').textContent = 'SAR ' + fmt(totIncl);
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Actions ──
+  function printTable() { window.print(); }
+
+  function clearAll() {
+    if (products.length === 0) return;
+    if (confirm('Clear all products?')) { products = []; nextId = 1; render(); }
+  }
+
+  function copyCSV() {
+    if (products.length === 0) { showToast('Nothing to copy!'); return; }
+    const header = '#,Product,Unit Price,Qty,VAT %,Excl. VAT,VAT Amount,Incl. VAT,Amount in Words';
+    const rows = products.map((p, i) =>
+      `${i+1},"${p.product}",${fmt(p.price)},${p.qty},15%,${fmt(p.exclVat)},${fmt(p.vatAmount)},${fmt(p.inclVat)},"${numToWords(p.inclVat)}"`
+    );
+    const totExcl = products.reduce((s,p)=>s+p.exclVat,0);
+    const totVat  = products.reduce((s,p)=>s+p.vatAmount,0);
+    const totIncl = products.reduce((s,p)=>s+p.inclVat,0);
+    rows.push(`,,,,Totals,${fmt(totExcl)},${fmt(totVat)},${fmt(totIncl)},`);
+    navigator.clipboard.writeText([header,...rows].join('\n'))
+      .then(()=>showToast('✓ Copied as CSV!'))
+      .catch(()=>showToast('Copy failed — try a different browser'));
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2500);
+  }
+
+  // ── Enter key on inputs ──
+  ['inp-product','inp-price','inp-qty'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') addProduct();
+    });
+  });
+
+  // ── Qty guard: prevent typing < 1 ──
+  document.getElementById('inp-qty').addEventListener('input', function() {
+    if (this.value !== '' && parseInt(this.value) < 1) this.value = 1;
+  });
+
+  // ── Export to Excel ──
+  function exportExcel() {
+    if (products.length === 0) { showToast('Nothing to export!'); return; }
+
+    const totExcl = products.reduce((s,p) => s + p.exclVat, 0);
+    const totVat  = products.reduce((s,p) => s + p.vatAmount, 0);
+    const totIncl = products.reduce((s,p) => s + p.inclVat, 0);
+
+    const dataRows = products.map((p, i) => ({
+      '#': i + 1,
+      'Product': p.product,
+      'Unit Price (SAR)': parseFloat(p.price.toFixed(2)),
+      'Quantity': p.qty,
+      'VAT %': 15,
+      'Amount Excl. VAT (SAR)': parseFloat(p.exclVat.toFixed(2)),
+      'VAT Amount (SAR)': parseFloat(p.vatAmount.toFixed(2)),
+      'Amount Incl. VAT (SAR)': parseFloat(p.inclVat.toFixed(2)),
+      'Amount in Words': numToWords(p.inclVat)
+    }));
+
+    // Blank separator then totals
+    dataRows.push({
+      '#': '', 'Product': 'TOTALS', 'Unit Price (SAR)': '', 'Quantity': '', 'VAT %': '',
+      'Amount Excl. VAT (SAR)': parseFloat(totExcl.toFixed(2)),
+      'VAT Amount (SAR)': parseFloat(totVat.toFixed(2)),
+      'Amount Incl. VAT (SAR)': parseFloat(totIncl.toFixed(2)),
+      'Amount in Words': ''
+    });
+
+    const ws = XLSX.utils.json_to_sheet(dataRows);
+
+    ws['!cols'] = [
+      { wch: 4 }, { wch: 32 }, { wch: 16 }, { wch: 10 },
+      { wch: 7 }, { wch: 22 }, { wch: 18 }, { wch: 22 }, { wch: 52 }
+    ];
+
+    // Number format for currency & qty columns
+    const numCols = [2, 5, 6, 7];
+    for (let r = 1; r <= dataRows.length; r++) {
+      numCols.forEach(ci => {
+        const ref = XLSX.utils.encode_cell({ r, c: ci });
+        if (ws[ref] && ws[ref].t === 'n') ws[ref].z = '#,##0.00';
+      });
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'VAT Invoice');
+
+    const today = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(wb, `VAT_Invoice_${today}.xlsx`);
+    showToast('✓ Excel file downloaded!');
+  }
+
+  render();
+</script>
+</body>
+</html>
