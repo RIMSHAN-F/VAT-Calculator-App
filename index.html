@@ -30,60 +30,64 @@
     color: var(--text);
     font-family: 'Sora', sans-serif;
     min-height: 100vh;
-    padding: 0 0 60px;
+    padding: 0 0 80px;
+    -webkit-text-size-adjust: 100%;
   }
 
   /* ── Header ── */
   header {
     background: linear-gradient(135deg, #0d1a17 0%, #0d0f14 60%);
     border-bottom: 1px solid var(--border);
-    padding: 28px 40px 24px;
+    padding: 20px 20px 18px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
   .logo-icon {
-    width: 44px; height: 44px;
+    width: 40px; height: 40px;
     background: var(--accent);
     border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 22px; flex-shrink: 0;
+    font-size: 20px; flex-shrink: 0;
   }
-  header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  header h1 { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.02em; }
   header span { color: var(--accent); }
-  .header-sub { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+  .header-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
   /* ── Main layout ── */
-  .container { max-width: 1100px; margin: 0 auto; padding: 36px 24px 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px 16px 0; }
 
   /* ── Input card ── */
   .card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 28px;
-    margin-bottom: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
     box-shadow: var(--shadow);
   }
   .card-title {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--accent);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .input-row {
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr auto;
-    gap: 14px;
-    align-items: end;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
+  .field-product { grid-column: 1 / -1; }
 
-  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
   .field label {
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--text-muted);
     letter-spacing: 0.04em;
@@ -92,47 +96,51 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 11px 14px;
+    padding: 12px 14px;
     color: var(--text);
     font-family: 'Sora', sans-serif;
-    font-size: 0.9rem;
+    font-size: 1rem; /* 16px prevents iOS zoom */
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
   }
   .field input:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0,212,170,0.1);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.12);
   }
   .field input::placeholder { color: var(--text-dim); }
   .field input.error { border-color: var(--danger); }
 
   .btn-add {
+    grid-column: 1 / -1;
     background: var(--accent);
     color: #000;
     border: none;
     border-radius: 8px;
-    padding: 11px 22px;
+    padding: 14px 22px;
     font-family: 'Sora', sans-serif;
-    font-size: 0.88rem;
+    font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
-    display: flex; align-items: center; gap: 7px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: background 0.15s, transform 0.1s;
-    white-space: nowrap;
     letter-spacing: 0.01em;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
-  .btn-add:hover { background: #00f0c2; transform: translateY(-1px); }
-  .btn-add:active { transform: translateY(0); }
+  .btn-add:hover { background: #00f0c2; }
+  .btn-add:active { transform: scale(0.98); }
 
   .err-msg {
     font-size: 0.72rem;
     color: var(--danger);
-    margin-top: 10px;
+    margin-top: 8px;
     min-height: 18px;
   }
 
-  /* ── Table ── */
-  .table-wrap { overflow-x: auto; }
+  /* ── Desktop table (≥ 768px) ── */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -153,13 +161,11 @@
     white-space: nowrap;
   }
   th.num { text-align: right; }
-
   tbody tr {
     border-bottom: 1px solid var(--border);
     transition: background 0.15s;
   }
   tbody tr:hover { background: rgba(255,255,255,0.02); }
-
   td {
     padding: 13px 14px;
     vertical-align: middle;
@@ -192,60 +198,143 @@
     padding: 2px 8px;
     border-radius: 4px;
   }
-
   .btn-del {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-dim);
     border-radius: 6px;
-    width: 30px; height: 30px;
+    width: 34px; height: 34px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
     transition: border-color 0.15s, color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
   }
-  .btn-del:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,77,106,0.07); }
+  .btn-del:hover, .btn-del:active { border-color: var(--danger); color: var(--danger); background: rgba(255,77,106,0.07); }
 
-  /* ── Totals footer ── */
+  /* ── Mobile card view for products (< 768px) ── */
+  .mobile-cards { display: none; }
+  .m-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .m-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+  .m-card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .m-card-product {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .m-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+  }
+  .m-row { display: flex; flex-direction: column; gap: 2px; }
+  .m-label {
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .m-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--text);
+  }
+  .m-value.accent { color: var(--accent); }
+  .m-value.gold { color: var(--gold); font-weight: 600; }
+  .m-words {
+    grid-column: 1 / -1;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── Mobile totals strip ── */
+  .mobile-totals {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--accent2);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .mobile-totals .mt-title {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .mobile-totals .mt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .mobile-totals .mt-row:last-child { border-bottom: none; }
+  .mobile-totals .mt-row.grand { padding-top: 8px; margin-top: 4px; }
+  .mobile-totals .mt-lbl { font-size: 0.75rem; color: var(--text-muted); }
+  .mobile-totals .mt-val { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent); }
+  .mobile-totals .mt-val.gold { color: var(--gold); font-size: 0.95rem; font-weight: 700; }
+
+  /* ── Totals footer (desktop) ── */
   tfoot tr {
     background: linear-gradient(90deg, var(--surface2), #1a2228);
     border-top: 2px solid var(--accent2);
   }
-  tfoot td {
-    padding: 15px 14px;
-    font-weight: 600;
-  }
+  tfoot td { padding: 15px 14px; font-weight: 600; }
   tfoot td.label {
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-muted);
+    font-size: 0.7rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-muted);
   }
   tfoot td.total-val {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.88rem;
-    text-align: right;
-    color: var(--accent);
+    font-size: 0.88rem; text-align: right; color: var(--accent);
   }
   tfoot td.grand-total {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.95rem;
-    text-align: right;
-    color: var(--gold);
+    font-size: 0.95rem; text-align: right; color: var(--gold);
   }
 
   /* ── Summary cards ── */
   .summary {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 24px;
+    gap: 12px;
+    margin-top: 16px;
   }
   .sum-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px 22px;
+    padding: 16px 18px;
     box-shadow: var(--shadow);
     position: relative;
     overflow: hidden;
@@ -337,12 +426,100 @@
     td, th { border: 1px solid #ddd; }
   }
 
-  @media (max-width: 700px) {
-    header { padding: 20px 18px; }
-    .container { padding: 20px 14px 0; }
+  /* ── Actions ── */
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 16px;
+  }
+  .btn-action {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 7px;
+    transition: all 0.15s;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .btn-action:hover { border-color: var(--accent); color: var(--accent); background: rgba(0,212,170,0.05); }
+  .btn-action.excel:hover { border-color: #1D6F42; color: #1D6F42; background: rgba(29,111,66,0.07); }
+  .btn-action.danger:hover { border-color: var(--danger); color: var(--danger); background: rgba(255,77,106,0.05); }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--surface2);
+    border: 1px solid var(--accent2);
+    color: var(--accent);
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 44px 20px;
+    color: var(--text-dim);
+  }
+  .empty-icon { font-size: 2.4rem; margin-bottom: 10px; opacity: 0.5; }
+  .empty-text { font-size: 0.85rem; line-height: 1.6; }
+
+  /* ── Print ── */
+  @media print {
+    body { background: #fff; color: #000; padding: 0; }
+    header { background: #fff; border-bottom: 2px solid #ccc; padding: 16px 24px; position: static; }
+    .card:first-child, .actions, .mobile-cards, .mobile-totals { display: none !important; }
+    .summary { display: grid !important; grid-template-columns: repeat(3,1fr); }
+    table { font-size: 11px; }
+    th { background: #f0f0f0 !important; color: #444 !important; }
+    tfoot tr { background: #f9f9f9 !important; }
+    td, th { border: 1px solid #ddd; }
+  }
+
+  /* ── Tablet ── */
+  @media (min-width: 600px) {
     .input-row { grid-template-columns: 1fr 1fr; }
-    .btn-add { grid-column: 1 / -1; justify-content: center; }
+    .field-product { grid-column: 1 / -1; }
+    .actions { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  /* ── Desktop ── */
+  @media (min-width: 900px) {
+    header { padding: 26px 40px 22px; }
+    header h1 { font-size: 1.5rem; }
+    .container { padding: 32px 24px 0; }
+    .card { padding: 26px; }
+    .input-row { grid-template-columns: 2fr 1.2fr 1fr auto; }
+    .field-product { grid-column: auto; }
+    .btn-add { grid-column: auto; width: auto; }
+    .summary { grid-template-columns: repeat(3, 1fr); }
+    .sum-value { font-size: 1.4rem; }
+  }
+
+  /* ── Mobile only: hide table, show cards ── */
+  @media (max-width: 599px) {
+    .table-card { display: none !important; }
+    .mobile-cards { display: block; }
+    .mobile-totals { display: block; }
     .summary { grid-template-columns: 1fr; }
+    .sum-value { font-size: 1.2rem; }
+    .sum-card { padding: 14px 16px; }
   }
 </style>
 </head>
@@ -362,28 +539,28 @@
   <div class="card">
     <div class="card-title">➕ Add Product</div>
     <div class="input-row">
-      <div class="field">
+      <div class="field field-product">
         <label>Product / Description</label>
-        <input type="text" id="inp-product" placeholder="e.g. Office Chair" />
+        <input type="text" id="inp-product" placeholder="e.g. Office Chair" autocomplete="off" />
       </div>
       <div class="field">
         <label>Unit Price (SAR)</label>
-        <input type="number" id="inp-price" placeholder="0.00" min="0" step="0.01" />
+        <input type="number" id="inp-price" placeholder="0.00" min="0" step="0.01" inputmode="decimal" />
       </div>
       <div class="field">
         <label>Quantity (min 1)</label>
-        <input type="number" id="inp-qty" placeholder="1" min="1" step="1" value="1" />
+        <input type="number" id="inp-qty" placeholder="1" min="1" step="1" value="1" inputmode="numeric" />
       </div>
       <button class="btn-add" onclick="addProduct()">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Add
+        Add Product
       </button>
     </div>
     <div class="err-msg" id="err-msg"></div>
   </div>
 
-  <!-- Table Card -->
-  <div class="card" style="padding:0; overflow:hidden;">
+  <!-- Desktop Table Card -->
+  <div class="card table-card" style="padding:0; overflow:hidden;">
     <div class="table-wrap">
       <table id="main-table">
         <thead>
@@ -400,9 +577,7 @@
             <th></th>
           </tr>
         </thead>
-        <tbody id="table-body">
-          <!-- rows injected here -->
-        </tbody>
+        <tbody id="table-body"></tbody>
         <tfoot id="table-foot" style="display:none">
           <tr>
             <td colspan="5" class="label">Totals</td>
@@ -417,6 +592,26 @@
         <div class="empty-icon">📦</div>
         <div class="empty-text">No products added yet.<br>Fill in the form above to get started.</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Mobile Cards View -->
+  <div class="mobile-cards" id="mobile-cards"></div>
+
+  <!-- Mobile Totals -->
+  <div class="mobile-totals" id="mobile-totals" style="display:none">
+    <div class="mt-title">Summary</div>
+    <div class="mt-row">
+      <span class="mt-lbl">Amount Excl. VAT</span>
+      <span class="mt-val" id="mt-excl">SAR 0.00</span>
+    </div>
+    <div class="mt-row">
+      <span class="mt-lbl">VAT Amount (15%)</span>
+      <span class="mt-val" id="mt-vat">SAR 0.00</span>
+    </div>
+    <div class="mt-row grand">
+      <span class="mt-lbl" style="font-weight:600;color:var(--text)">Total Incl. VAT</span>
+      <span class="mt-val gold" id="mt-incl">SAR 0.00</span>
     </div>
   </div>
 
@@ -443,15 +638,15 @@
   <div class="actions">
     <button class="btn-action" onclick="printTable()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-      Print / Save PDF
+      Print / PDF
     </button>
     <button class="btn-action" onclick="copyCSV()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-      Copy as CSV
+      Copy CSV
     </button>
     <button class="btn-action excel" onclick="exportExcel()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
-      Export to Excel
+      Export Excel
     </button>
     <button class="btn-action danger" onclick="clearAll()">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
@@ -461,7 +656,7 @@
 
 </div>
 
-<div id="toast">✓ Copied to clipboard!</div>
+<div id="toast"></div>
 
 <script>
   // ── State ──
@@ -548,19 +743,26 @@
     const tfoot = document.getElementById('table-foot');
     const empty = document.getElementById('empty-state');
     const summary = document.getElementById('summary');
+    const mobileCards = document.getElementById('mobile-cards');
+    const mobileTotals = document.getElementById('mobile-totals');
 
     tbody.innerHTML = '';
+    mobileCards.innerHTML = '';
 
     if (products.length === 0) {
       empty.style.display = 'block';
       tfoot.style.display = 'none';
       summary.style.display = 'none';
+      mobileTotals.style.display = 'none';
+      // show empty state inside mobile cards too
+      mobileCards.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-text">No products added yet.<br>Fill in the form above to get started.</div></div>`;
       return;
     }
 
     empty.style.display = 'none';
     tfoot.style.display = '';
     summary.style.display = 'grid';
+    mobileTotals.style.display = 'block';
 
     let totExcl = 0, totVat = 0, totIncl = 0;
 
@@ -569,6 +771,7 @@
       totVat += p.vatAmount;
       totIncl += p.inclVat;
 
+      // ── Desktop table row ──
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="num-idx">${i + 1}</td>
@@ -587,12 +790,56 @@
         </td>
       `;
       tbody.appendChild(tr);
+
+      // ── Mobile card ──
+      const mc = document.createElement('div');
+      mc.className = 'm-card';
+      mc.innerHTML = `
+        <div class="m-card-header">
+          <span class="m-card-num">#${i + 1}</span>
+          <span class="m-card-product">${escHtml(p.product)}</span>
+          <button class="btn-del" onclick="deleteProduct(${p.id})" title="Remove">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="m-card-grid">
+          <div class="m-row">
+            <span class="m-label">Unit Price</span>
+            <span class="m-value">SAR ${fmt(p.price)}</span>
+          </div>
+          <div class="m-row">
+            <span class="m-label">Quantity</span>
+            <span class="m-value">${p.qty}</span>
+          </div>
+          <div class="m-row">
+            <span class="m-label">Excl. VAT</span>
+            <span class="m-value accent">SAR ${fmt(p.exclVat)}</span>
+          </div>
+          <div class="m-row">
+            <span class="m-label">VAT (15%)</span>
+            <span class="m-value accent">SAR ${fmt(p.vatAmount)}</span>
+          </div>
+          <div class="m-row" style="grid-column:1/-1">
+            <span class="m-label">Total Incl. VAT</span>
+            <span class="m-value gold" style="font-size:1rem">SAR ${fmt(p.inclVat)}</span>
+          </div>
+          <div class="m-words">${numToWords(p.inclVat)}</div>
+        </div>
+      `;
+      mobileCards.appendChild(mc);
     });
 
+    // Update desktop totals
     document.getElementById('tot-excl').textContent = 'SAR ' + fmt(totExcl);
     document.getElementById('tot-vat').textContent  = 'SAR ' + fmt(totVat);
     document.getElementById('tot-incl').textContent = 'SAR ' + fmt(totIncl);
 
+    // Update mobile totals
+    document.getElementById('mt-excl').textContent = 'SAR ' + fmt(totExcl);
+    document.getElementById('mt-vat').textContent  = 'SAR ' + fmt(totVat);
+    document.getElementById('mt-incl').textContent = 'SAR ' + fmt(totIncl);
+
+    // Update summary cards
     document.getElementById('s-excl').textContent = 'SAR ' + fmt(totExcl);
     document.getElementById('s-vat').textContent  = 'SAR ' + fmt(totVat);
     document.getElementById('s-incl').textContent = 'SAR ' + fmt(totIncl);
